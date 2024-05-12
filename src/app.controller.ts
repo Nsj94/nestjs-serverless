@@ -5,8 +5,9 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get('/hello/get')
-  getHello(): string {
-    return this.appService.getHello();
+  // hit this endpoint to create  the user table in dynamodb
+  @Get('/user-table')
+  async getHello() {
+    return await this.appService.getHello();
   }
 }

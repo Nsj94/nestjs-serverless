@@ -5,13 +5,14 @@ import { Callback, Context, Handler } from 'aws-lambda';
 
 let server: Handler;
 
-async function bootstrap(): Promise<Handler> {
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   await app.init();
 
   const expressApp = app.getHttpAdapter().getInstance();
   return serverlessExpress({ app: expressApp });
 }
+bootstrap();
 
 export const handler: Handler = async (
   event: any,
