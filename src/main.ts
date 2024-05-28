@@ -1,26 +1,33 @@
 import { NestFactory } from '@nestjs/core';
 import serverlessExpress from '@codegenie/serverless-express';
-import { AppModule } from './app.module';
 import { Callback, Context, Handler } from 'aws-lambda';
+import { ConfigService } from '@nestjs/config';
+
+import { AppModule } from './app.module';
 
 let server: Handler;
+const configService = new ConfigService();
+const nodeEnv = configService.get<string>('NODE_ENV');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.init();
 
-  const expressApp = app.getHttpAdapter().getInstance();
-  return serverlessExpress({ app: expressApp });
+  if (nodeEnv === 'production') {
+    await app.init();
+
+    const expressApp = app.getHttpAdapter().getInstance();
+    return serverlessExpress({ app: expressApp });
+  } else {
+    await app.listen(3000);
+  }
 }
-bootstrap();
 
-export const handler: Handler = async (
+nodeEnv !== 'production' && bootstrap();
+export const handler = async (
   event: any,
   context: Context,
   callback: Callback,
-) => {
-  if (!server) {
-    server = await bootstrap();
-  }
+): Promise<any> => {
+  server = server ?? (await bootstrap());
   return server(event, context, callback);
 };
